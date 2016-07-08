@@ -15,18 +15,21 @@ import java.util.Random;
 public class BayesNet {
     
     static String[] hVistitAsia = {"A","P(A)"};
-    static Double[][] mVisitAsia = {{1., 0.01},
-                                    {0., 0.99}};
+    static Double[][] mVisitAsia = {
+        {1., 0.01},
+        {0., 0.99}};
     
     static String[] hTuberculosis_VistiAsia = {"A","T","P(T|A)"};
-    static Double[][] mTuberculosis_VisitAsia = {{1., 1., 0.05},
-                                          {1., 0., 0.95},
-                                          {0., 1., 0.01},
-                                          {0., 0., 0.99}};
+    static Double[][] mTuberculosis_VisitAsia = {
+        {1., 1., 0.05},
+        {1., 0., 0.95},
+        {0., 1., 0.01},
+        {0., 0., 0.99}};
     
     static String[] hSmoke = {"S","P(S)"};
-    static Double[][] mSmoke = {{1., 0.5},
-                                {0., 0.5}};
+    static Double[][] mSmoke = {
+        {1., 0.5},
+        {0., 0.5}};
     
     static String[] hBronchitis = {"S","B","P(B|S)"};
     static Double[][] mBronchitis = {
@@ -97,12 +100,62 @@ public class BayesNet {
         sample = generateTuberculosis(sample,false);
         sample = generateSmoker(sample,false);
         sample = generateCancer(sample,false);
+        sample = generateBronchiti(sample,false);
+        sample = generateTBorCancer(sample,false);
+        sample = generateXRay(sample,false);
         
         showSample(sample);
     }
     
     public static void generateSample(){
         
+    }
+    
+    public static Double[] generateXRay(Double[] sample,Boolean evidence){
+        if(evidence == false){
+            Double r = randomValue();
+            if(sample[indexTBorCancer] == 1.0){
+                if(r < mXRay[0][2]){
+                    sample[indexXRay] = 1.;
+                }else{
+                    sample[indexXRay] = 0.;
+                }
+            }else{
+                if(r < mXRay[2][2]){
+                    sample[indexXRay] = 1.;
+                }else{
+                    sample[indexXRay] = 0.;
+                }
+            }
+        }else{
+            if(evidences[indexXRay]){
+                sample[indexXRay] = 1.;
+                if(sample[indexTBorCancer] == 1.0){
+                    sample[indexW] *= mXRay[0][2];
+                }else{
+                    sample[indexW] *= mXRay[2][2];
+                }
+            }else{
+                sample[indexXRay] = 0.;
+                if(sample[indexTBorCancer] == 1.0){
+                    sample[indexW] *= mXRay[1][2];
+                }else{
+                    sample[indexW] *= mXRay[3][2];
+                }
+            }
+        }
+        return sample;
+    }
+    
+    public static Double[] generateTBorCancer(Double[] sample,Boolean evidence){
+        if(evidence == false){
+            if(sample[indexTuberculosis] == 1.0 || sample[indexCancer] == 1.0){
+                sample[indexTBorCancer] = 1.;
+            }else{
+                sample[indexTBorCancer] = 0.;
+            }
+        }
+        return sample;
     }
     
     public static Double[] generateBronchiti(Double[] sample,Boolean evidence){
