@@ -69,19 +69,99 @@ public class BayesNet3 {
         Double[] result = calculateLBS(mSmoke,mBronchitis,mCancer);
         result = evidenceS_resultLBs(result);
         result = calculateASTLB(calculateTA(mVisitAsia,mTuberculosis_VisitAsia),result);
+        result = calculateASETLB(mTBorCancer,result);
+        result = eliminateTL_resultASEB(result);
+        result = calculateASEBD(mDispnea_Bronchitis_TB_Cancer,result);
+        result = eliminateBD_resultASE(result);
+        calculateXas(mXRay,result[0]);
+        
+    }
+    public static void calculateXas(Double[][] matrix_XE,Double matrix_AS){
+        System.out.print("\nX  | +a  | +s  |P(X,+a,+s)\n");
+        System.out.printf("+x   | +a  | +s  |%f\n",matrix_XE[0][2]*matrix_AS);
+        System.out.printf("-x   | +a  | +s  |%f\n",matrix_XE[1][2]*matrix_AS);
     }
     
-    public static Double[] calculateASTLB(Double[] matriz_TA,Double[] matriz_LBS){
+    public static Double[] eliminateBD_resultASE(Double[] matrix_ASEBD){
+        System.out.println("\nELIMINANDO B -> P(A,S,E,D)\n");
+        Double[] matrix_ASE = new Double[2];
+        
+        matrix_ASE[0] = 0.;
+        
+        for(int i = 0; i < 4; i++){
+            matrix_ASE[0] += matrix_ASEBD[i];
+        }
+        
+        System.out.printf("%f\n",matrix_ASE[0]);
+        
+        return matrix_ASE;
+    }
+    
+    public static Double[] calculateASEBD(Double[][] matrix_DEB,Double[] matrix_ASEB){
+        System.out.println("\nCALCULANDO P(A,S,D,E,B)");
+        Double[] matrix_ASEBD = new Double[4];
+        
+        for(int i = 0; i < 4; i++){
+            if(i < 2){
+                //System.out.printf("%f %f\n",matrix_DEB[i][3],matrix_ASEB[0]);
+                matrix_ASEBD[i] = matrix_DEB[i][3] * matrix_ASEB[0];
+            }else{
+                //System.out.printf("%f %f\n",matrix_DEB[i][3],matrix_ASEB[1]);
+                matrix_ASEBD[i] = matrix_DEB[i][3] * matrix_ASEB[1];
+            }
+            System.out.printf("%f\n",matrix_ASEBD[i]);
+        }
+        
+        
+        
+        return matrix_ASEBD;
+    }
+    
+    public static Double[] eliminateTL_resultASEB(Double[] matrix_ASETLB){
+        System.out.println("\nELIMINANDO TL -> P(A,S,E,B)\n");
+        Double[] matrix_ASEB = new Double[2];
+    
+        matrix_ASEB[0] = 0.;
+        matrix_ASEB[1] = 0.;
+        
+        for(int i = 0; i < 8; i++){
+            if(i % 2 == 0){
+                matrix_ASEB[0] += matrix_ASETLB[i];
+            }else{
+                matrix_ASEB[1] += matrix_ASETLB[i];
+            }
+        }
+        
+        for(int i = 0; i < 2; i++){
+            System.out.printf("%f\n",matrix_ASEB[i]);
+        }
+        
+        return matrix_ASEB;
+    }
+    
+    public static Double[] calculateASETLB(Double[][] matriz_ELT,Double[] matrix_ASTLB){
+        System.out.println("\nCALCULANDO P(A,S,E,T,L,B)\n");
+        Double[] matrix_ASETLB = new Double[8];
+        
+        for(int i = 0; i < 8; i++){
+            matrix_ASETLB[i] = matriz_ELT[i/2][3] * matrix_ASTLB[i];
+            System.out.printf("%f\n",matrix_ASETLB[i]);
+        }
+        
+        return matrix_ASETLB;
+    }
+    
+    public static Double[] calculateASTLB(Double[] matrix_TA,Double[] matrix_LBS){
         System.out.println("\nCALCULANDO P(A,S,T,L,B)\n");
         Double[] matrix_ASTLB = new Double[8];
         
         for(int i = 0; i < 8; i++){
             if(i < 4){
-                matrix_ASTLB[i] = matriz_TA[0] * matriz_LBS[i];
+                matrix_ASTLB[i] = matrix_TA[0] * matrix_LBS[i];
             }else{
-                matrix_ASTLB[i] = matriz_TA[1] * matriz_LBS[i-4];
+                matrix_ASTLB[i] = matrix_TA[1] * matrix_LBS[i-4];
             }
-            System.out.printf("%d %f\n",i,matrix_ASTLB[i]);
+            System.out.printf("%f\n",matrix_ASTLB[i]);
         }
     
         return matrix_ASTLB;

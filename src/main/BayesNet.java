@@ -6,7 +6,7 @@
 
 package main;
 
-import entities.Table;
+import java.util.Random;
 
 /**
  *
@@ -66,79 +66,210 @@ public class BayesNet {
         {1.,0.,0.02},
         {0.,1.,0.05},
         {0.,0.,0.95}};
-
+    
+    final static int indexVisitAfrica = 0;
+    final static int indexTuberculosis = 1;
+    final static int indexTBorCancer = 2;
+    final static int indexSmoker = 3;
+    final static int indexCancer = 4;
+    final static int indexBronchitis = 5;
+    final static int indexDispnea = 6;
+    final static int indexXRay = 7;
+    final static int indexW = 8;
+    final static int nIndexes = 9;
+    
+    static Boolean[] evidences = {
+        true,//VisitAfrica
+        true,//Tuberculosis
+        true,//TBorCancer
+        true,//Smoker
+        true,//Cancer
+        true,//Bronchitis
+        true,//Dispnea
+        true//XRay
+    };
     
     public static void main(String[] args) {
         // TODO code application logic here
+        Double[] sample = new Double[nIndexes];
+        sample[indexW] = 1.; 
+        sample = generateVisitAfrica(sample,false);
+        sample = generateTuberculosis(sample,false);
+        sample = generateSmoker(sample,false);
+        sample = generateCancer(sample,false);
         
-        
-        Table nVisitAsia = new Table(hVistitAsia,mVisitAsia);
-        Table nTuberculosis_VisitAsia = new Table(hTuberculosis_VistiAsia,mTuberculosis_VisitAsia);
-     
-        joinTable(nVisitAsia,nTuberculosis_VisitAsia);
+        showSample(sample);
     }
     
-    public static Double[][] joinTable(Table node1, Table node2){
-        Double[][] resultTable;
-        Integer[][] indexes = {{-1,-1,-1,-1,-1,-1},{-1,-1,-1,-1,-1}};
-        String[] headers = new String[5];
+    public static void generateSample(){
         
-        Double[][] m1 = node1.getMatrix();
-        Double[][] m2 = node2.getMatrix();
-        
-        String[] h1 = node1.getHeaders();
-        String[] h2 = node2.getHeaders();
-        int index;
-        
-        for(int i = 0; i < node1.size(); i++){
-            index = node2.hasHeader(h1[i]);
-            if(index != -1){
-                indexes[0][i] = i;
-                indexes[1][i] = index;
-            }
-        }
-        
-        for(int i = 0; i < 5; i++){
-            System.out.println(indexes[0][i]+" "+indexes[1][i]+"-"+headers[i]+"-");
-        }
-        
-        int hasHeader;
-        int headersSize = 0;
-        for(int i = 0; i < h1.length - 1; i++){
-            headers = hasHeader(headers,h1[i]);
-        }
-        
-        for(int i = 0; i < h2.length - 1; i++){
-            headers = hasHeader(headers,h2[i]);
-        }
-        
-        for(int i = 0; i < headers.length; i++){
-            System.out.println(headers[i]);
-            if(headers[i] == null){
-                headersSize = i;
-            }
-        }
-        
-        //CALCULA O TAMANHO DA TABELA RESULTANTE BASEADO NO NÚMERO DE COLUNAS (HEADERSSIZE)
-        //O "+1" É PRA ADICIONAR A COLUNA DA PROBABILIDADE
-        //E DE LINHAS 2^n
-        resultTable = new Double[(int) Math.pow(2,headersSize)][headersSize+1];
-        
-        return resultTable;
     }
     
-    public static String[] hasHeader(String[] headers,String header){
-        for(int i = 0; i < headers.length; i++){
-            if(headers[i] == null){
-                headers[i] = header;
-                return headers;
-            }else if(headers[i].equals(header)){
-                return headers;
+    public static Double[] generateBronchiti(Double[] sample,Boolean evidence){
+        if(evidence ==  false){
+            Double r = randomValue();
+            if(sample[indexSmoker] == 1.0){
+                if(r < mBronchitis[0][2]){
+                    sample[indexBronchitis] = 1.;
+                }else{
+                    sample[indexBronchitis] = 0.;
+                }
+            }else{
+                if(r < mBronchitis[2][2]){
+                    sample[indexBronchitis] = 1.;
+                }else{
+                    sample[indexBronchitis] = 0.;
+                }
+            }
+        }else{
+            if(evidences[indexBronchitis]){
+                sample[indexBronchitis] = 1.;
+                if(sample[indexSmoker] == 1.0){
+                    sample[indexW] *= mBronchitis[0][2];
+                }else{
+                    sample[indexW] *= mBronchitis[2][2];
+                }
+            }else{
+                sample[indexCancer] = 0.;
+                if(sample[indexSmoker] == 1.0){
+                    sample[indexW] *= mBronchitis[1][2];
+                }else{
+                    sample[indexW] *= mBronchitis[3][2];
+                }
             }
         }
-        
-        return headers;
+        return sample;
     }
     
-
+    public static Double[] generateCancer(Double[] sample,Boolean evidence){
+        if(evidence ==  false){
+            Double r = randomValue();
+            if(sample[indexSmoker] == 1.0){
+                if(r < mCancer[0][2]){
+                    sample[indexCancer] = 1.;
+                }else{
+                    sample[indexCancer] = 0.;
+                }
+            }else{
+                if(r < mCancer[2][2]){
+                    sample[indexCancer] = 1.;
+                }else{
+                    sample[indexCancer] = 0.;
+                }
+            }
+        }else{
+            if(evidences[indexCancer]){
+                sample[indexCancer] = 1.;
+                if(sample[indexSmoker] == 1.0){
+                    sample[indexW] *= mTuberculosis_VisitAsia[0][2];
+                }else{
+                    sample[indexW] *= mTuberculosis_VisitAsia[2][2];
+                }
+            }else{
+                sample[indexCancer] = 0.;
+                if(sample[indexSmoker] == 1.0){
+                    sample[indexW] *= mTuberculosis_VisitAsia[1][2];
+                }else{
+                    sample[indexW] *= mTuberculosis_VisitAsia[3][2];
+                }
+            }
+        }
+        return sample;
+    }
+    
+    public static Double[] generateSmoker(Double[] sample,Boolean evidence){
+        if(evidence ==  false){
+            Double r = randomValue();
+            if(r < mSmoke[0][1]){
+                sample[indexSmoker] = 1.;
+            }else{
+                sample[indexSmoker] = 0.;
+            } 
+        }else{
+            if(evidences[indexSmoker]){
+                sample[indexSmoker] = 1.;
+                sample[indexW] *= mSmoke[0][1];
+            }else{
+                sample[indexSmoker] = 0.;
+                sample[indexW] *= mSmoke[1][1];
+            }
+        }
+        return sample;
+    }
+    
+    public static Double[] generateTuberculosis(Double[] sample,Boolean evidence){
+        if(evidence ==  false){
+            Double r = randomValue();
+            if(sample[indexVisitAfrica] == 1.0){
+                if(r < mTuberculosis_VisitAsia[0][2]){
+                    sample[indexTuberculosis] = 1.;
+                }else{
+                    sample[indexTuberculosis] = 0.;
+                }
+            }else{
+                if(r < mTuberculosis_VisitAsia[2][2]){
+                    sample[indexTuberculosis] = 1.;
+                }else{
+                    sample[indexTuberculosis] = 0.;
+                }
+            }
+        }else{
+            if(evidences[indexTuberculosis]){
+                sample[indexTuberculosis] = 1.;
+                if(sample[indexVisitAfrica] == 1.0){
+                    sample[indexW] *= mTuberculosis_VisitAsia[0][2];
+                }else{
+                    sample[indexW] *= mTuberculosis_VisitAsia[2][2];
+                }
+            }else{
+                sample[indexTuberculosis] = 0.;
+                if(sample[indexVisitAfrica] == 1.0){
+                    sample[indexW] *= mTuberculosis_VisitAsia[1][2];
+                }else{
+                    sample[indexW] *= mTuberculosis_VisitAsia[3][2];
+                }
+            }
+        }
+        return sample;
+    }
+    
+    public static Double[] generateVisitAfrica(Double[] sample,Boolean evidence){
+        if(evidence ==  false){
+            Double r = randomValue();
+            if(r < mVisitAsia[0][1]){
+                sample[indexVisitAfrica] = 1.;
+            }else{
+                sample[indexVisitAfrica] = 0.;
+            } 
+        }else{
+            if(evidences[indexVisitAfrica]){
+                sample[indexVisitAfrica] = 1.;
+                sample[indexW] = mVisitAsia[0][1];
+            }else{
+                sample[indexVisitAfrica] = 0.;
+                sample[indexW] = mVisitAsia[1][1];
+            }
+        }
+        return sample;
+    }
+    
+    public static Double randomValue(){
+        Double rangeMin = 0.;
+        Double rangeMax = 1.;
+        
+        Random r = new Random();
+        double randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
+        System.out.println(randomValue+"");
+        return randomValue;
+    }
+    
+    public static void showSample(Double[] sample){
+        for(int i = 0; i < nIndexes; i++){
+            if(i < 8){
+                System.out.print(sample[i]+" ");
+            }else{
+                System.out.printf("%f\n",sample[i]);
+            }
+        }
+    }
 }

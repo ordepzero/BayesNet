@@ -69,7 +69,7 @@ public class BayesNet2 {
         Double[][] result = calculateLBS(mSmoke,mBronchitis,mCancer);
         result = eliminateS_resultLB(result);
         result = calculateELTB(mTBorCancer,result);
-        result = normalizeELTB(result); 
+        //result = normalizeELTB(result); 
         result = eliminateL_resultETB(result);
         result = calculateDEBT(mDispnea_Bronchitis_TB_Cancer,result);
         result = eliminateB_resultEDT(result);
