@@ -72,17 +72,35 @@ public class BayesNet4 {
         
         Double[] result = calculateTA(mVisitAsia,mTuberculosis_VisitAsia);
         result = eliminateA_resultT(result);
+        result = normalize(result);
         result = calculateELT(mTBorCancer,result);
         result = eliminateT_resultEL(result);
+        result = normalize(result);
         result = calculate_xEL(mXRay,result);
         result = calculate_XELDB(mDispnea_Bronchitis_TB_Cancer,result);
         result = eliminateE_evidenceD_resultXLdB(result);
+        result = normalize(result);
         result = calculateXLBS(calculateLBS(mSmoke,mBronchitis,mCancer),result);
+        result = normalize(result);
         calculateSxd(result);
     }
     
+    public static Double[] normalize(Double[] matrix){
+        Double total = 0.;
+        
+        for(int i = 0; i < matrix.length; i++){
+            total += matrix[i];
+        }
+        for(int i = 0; i < matrix.length; i++){
+            
+            matrix[i] = matrix[i]/total;
+        }
+        
+        return matrix;
+    }
+    
     public static void calculateSxd(Double[] matrix_xdLBS){
-        System.out.println("\nCALCULANDO P(S,+x,+d)\n");
+        //System.out.println("\nCALCULANDO P(S,+x,+d)\n");
         Double[] matrix_Sxd = new Double[2];
         
         matrix_Sxd[0] = 0.;
@@ -96,25 +114,27 @@ public class BayesNet4 {
             }
         }
         
+        
+        
         System.out.println("S | P(S,+x,+d)");
         System.out.println("+s| "+matrix_Sxd[0]);
         System.out.println("-s| "+matrix_Sxd[1]);
     }
     
     public static Double[] calculateXLBS(Double[] matrix_LBS,Double[] matrix_XLdB){
-        System.out.println("\nCALCULANDO P(X,L,d,B,S)\n");
+        //System.out.println("\nCALCULANDO P(X,L,d,B,S)\n");
         Double[] matrix_XLBS = new Double[8];
         
         for(int i = 0; i < 8; i++){
             matrix_XLBS[i] = matrix_LBS[i] * matrix_XLdB[i / 2];
-            System.out.printf("%f\n",matrix_XLBS[i]);
+            //System.out.printf("%f\n",matrix_XLBS[i]);
         }
         
         return matrix_XLBS;
     }
     
     public static Double[] calculateLBS(Double[][] matrix_S, Double[][] matrix_S_B,Double[][] matrix_S_L){
-        System.out.println("\nCALCULANDO LBS");
+        //System.out.println("\nCALCULANDO LBS");
         Double[] matrix_LBS = new Double[8];
               
                 
@@ -158,15 +178,15 @@ public class BayesNet4 {
             matrix_LBS[i] = matrix_S[i1][1] * matrix_S_B[i3][2] * matrix_S_L[i2][2];
         }
         
-        for(int i = 0; i < 8; i++){
-           System.out.printf("%f\n",matrix_LBS[i]);
-        }
+//        for(int i = 0; i < 8; i++){
+//           System.out.printf("%f\n",matrix_LBS[i]);
+//        }
         
         return matrix_LBS;
     }
     
     public static Double[] eliminateE_evidenceD_resultXLdB(Double[] matrix_XELDB){
-        System.out.println("\nELIMINANDO E E EVIDENCIA D -> P(X,L,d,B)\n");
+        //System.out.println("\nELIMINANDO E E EVIDENCIA D -> P(X,L,d,B)\n");
         Double[] matrix_XLdB = new Double[4];
         
         matrix_XLdB[0] = matrix_XELDB[0];
@@ -174,15 +194,15 @@ public class BayesNet4 {
         matrix_XLdB[2] = matrix_XELDB[4];
         matrix_XLdB[3] = matrix_XELDB[5];
         
-        for(int i = 0; i < 4; i++){
-            System.out.printf("%f\n",matrix_XLdB[i]);
-        }
+//        for(int i = 0; i < 4; i++){
+//            System.out.printf("%f\n",matrix_XLdB[i]);
+//        }
         
         return matrix_XLdB;
     }    
     
     public static Double[] calculate_XELDB(Double[][] matrix_DEB,Double[] matrix_xEL){
-        System.out.println("\nCALCULANDO P(X,E,L,D,B)\n");
+        //System.out.println("\nCALCULANDO P(X,E,L,D,B)\n");
         Double[]  matrix_XELDB = new Double[8];
         int i1 = 0;
         
@@ -214,15 +234,15 @@ public class BayesNet4 {
             }
         }
         
-        for(int i = 0; i < 8; i++){
-            System.out.printf("%f \n",matrix_XELDB[i]);
-        }
+//        for(int i = 0; i < 8; i++){
+//            System.out.printf("%f \n",matrix_XELDB[i]);
+//        }
         
         return matrix_XELDB;
     }
     
     public static Double[] calculate_xEL(Double[][] matrix_EX,Double[] matrixEL){
-        System.out.println("\nCALCULANDO P(X,E,L)\n");
+        //System.out.println("\nCALCULANDO P(X,E,L)\n");
         Double[] matrix_XEL = new Double[2];
         
         for(int i = 0; i < 2; i++){
@@ -233,29 +253,29 @@ public class BayesNet4 {
             }
         }
         
-        for(int  i = 0; i < 2; i++){
-            System.out.printf("%f\n",matrix_XEL[i]);
-        }
+//        for(int  i = 0; i < 2; i++){
+//            System.out.printf("%f\n",matrix_XEL[i]);
+//        }
             
         return matrix_XEL;
     }
     
     public static Double[] eliminateT_resultEL(Double[] matrix_ELT){
-        System.out.println("\nELIMINANDO T -> P(E,L)\n");
+        //System.out.println("\nELIMINANDO T -> P(E,L)\n");
         Double[] matrix_EL = new Double[2];
         
         matrix_EL[0] = matrix_ELT[0] + matrix_ELT[1];
         matrix_EL[1] = matrix_ELT[2] + matrix_ELT[3];
         
-        for(int i = 0; i < 2; i++){
-            System.out.printf("%f\n",matrix_EL[i]);
-        }
+//        for(int i = 0; i < 2; i++){
+//            System.out.printf("%f\n",matrix_EL[i]);
+//        }
         
         return matrix_EL;
     }
     
     public static Double[] calculateELT(Double[][] matrixE_LT, Double[] matrix_T){
-        System.out.println("\nCALCULANDO P(E,L,T)\n");
+        //System.out.println("\nCALCULANDO P(E,L,T)\n");
         Double[] matrix_ELT = new Double[4];
         
         for(int i = 0; i < 4; i++){
@@ -265,14 +285,14 @@ public class BayesNet4 {
                 matrix_ELT[i] = matrixE_LT[i][3] * matrix_T[1];
             }
         }
-        for(int i = 0; i < 4; i++){
-            System.out.printf("%f\n",matrix_ELT[i]);
-        }
+//        for(int i = 0; i < 4; i++){
+//            System.out.printf("%f\n",matrix_ELT[i]);
+//        }
         return matrix_ELT;
     }
     
     public static Double[] eliminateA_resultT(Double[] matrix_TA){
-        System.out.println("\nELIMINANDO A -> P(T)");
+        //System.out.println("\nELIMINANDO A -> P(T)");
         Double[] matrix_T = new Double[2];
         matrix_T[0] = 0.;
         matrix_T[1] = 0.;
@@ -285,15 +305,15 @@ public class BayesNet4 {
             }
         }
             
-        for(int i = 0; i < 2; i++){
-            System.out.printf("%f\n",matrix_T[i]);
-        }
+//        for(int i = 0; i < 2; i++){
+//            System.out.printf("%f\n",matrix_T[i]);
+//        }
         
         return matrix_T;
     }
     
     public static Double[] calculateTA(Double[][] matrix_A, Double[][] matrix_T_A){
-        System.out.println("\nCALCULANDO TA\n");
+        //System.out.println("\nCALCULANDO TA\n");
         Double[] matrix_TA = new Double[4];
         int index1,index2;
         
@@ -306,9 +326,9 @@ public class BayesNet4 {
             matrix_TA[i] = matrix_A[index1][1] * matrix_T_A[i][2]; 
         }
                
-        for(int i = 0; i < 4; i++){
-            System.out.printf("%f \n",matrix_TA[i]);
-        }
+//        for(int i = 0; i < 4; i++){
+//            System.out.printf("%f \n",matrix_TA[i]);
+//        }
         
         return matrix_TA;
     }
