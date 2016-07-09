@@ -98,7 +98,7 @@ public class BayesNet {
     
     public static void main(String[] args) {
         // TODO code application logic here
-        int nSamples = 10000;
+        int nSamples = 1000;
         Double[][] samples = new Double[nSamples][];
         
         for(int i = 0; i < nSamples; i++){
@@ -106,9 +106,9 @@ public class BayesNet {
             samples[i] = generateSample();
         }
         samples = joinSamples(samples);
-        smokerProbability(samples);
+        //smokerProbability(samples);
         //XRayProbability(samples);
-        //tuberculosisProbability(samples);
+        tuberculosisProbability(samples);
     }
     
     public static Double[][] joinSamples(Double[][] samples){
@@ -149,14 +149,19 @@ public class BayesNet {
     
     public static void tuberculosisProbability(Double[][] samples){
         int nSamples = samples.length;
-        int total = 0;
+        Double total = 0.;
+        Double tub = 0.;
         for(int i = 0; i < nSamples; i++){
-            if(samples[i][indexTuberculosis] == 1.0){
-                total++;
+            if(samples[i][0] == null){
+                continue;
+            }
+            total += samples[i][indexW];
+            if(samples[i][indexTuberculosis] == 0.0){
+                tub += samples[i][indexW];
             }
         }
         
-        System.out.printf("P(T) = %f\n",((1.0*total)/nSamples));
+        System.out.printf("P(T) = %f\n",((1.0*tub)/total));
     }
     
     public static void XRayProbability(Double[][] samples){
