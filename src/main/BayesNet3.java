@@ -44,7 +44,11 @@ public class BayesNet3 {
         {1.,1.,1.,1.},
         {1.,1.,0.,1.},
         {1.,0.,1.,1.},
-        {1.,0.,0.,0.}};
+        {1.,0.,0.,0.},
+        {0.,1.,1.,0.},
+        {0.,1.,0.,0.},
+        {0.,0.,1.,0.},
+        {0.,0.,0.,1.}};
     
     static String[] hDispnea_Bronchitis_TB_Cancer = {"E","B","D","P(D|E,B)"};
     static Double[][] mDispnea_Bronchitis_TB_Cancer = {
