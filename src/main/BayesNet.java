@@ -99,16 +99,27 @@ public class BayesNet {
     public static void main(String[] args) {
         // TODO code application logic here
         int nSamples = 1000;
+        int query = 3;
         Double[][] samples = new Double[nSamples][];
         
         for(int i = 0; i < nSamples; i++){
             //System.out.print(i+" | ");
-            samples[i] = generateSample();
+            samples[i] = generateSample(query);
         }
         samples = joinSamples(samples);
-        //smokerProbability(samples);
-        //XRayProbability(samples);
-        tuberculosisProbability(samples);
+        
+        
+        switch(query){
+            case 1:
+                smokerProbability(samples);
+                break;
+            case 2:
+                XRayProbability(samples);
+                break;
+            case 3:
+                tuberculosisProbability(samples);
+                break;
+        }
     }
     
     public static Double[][] joinSamples(Double[][] samples){
@@ -156,7 +167,7 @@ public class BayesNet {
                 continue;
             }
             total += samples[i][indexW];
-            if(samples[i][indexTuberculosis] == 0.0){
+            if(samples[i][indexTuberculosis] == 1.0){
                 tub += samples[i][indexW];
             }
         }
@@ -173,12 +184,13 @@ public class BayesNet {
                 continue;
             }
             total += samples[i][indexW];
-            if(samples[i][indexXRay] == 0.0){
+            if(samples[i][indexXRay] == 1.0){
                 x += samples[i][indexW];
             }
         }
-        
-        System.out.printf("P(X) = %f\n",(x / total));
+        System.out.println("X | +a, +s");
+        System.out.printf("+x = %f\n",(x / total));
+        System.out.printf("-x = %f\n",1 -( x / total));
     }
     
     public static void smokerProbability(Double[][] samples){
@@ -190,25 +202,40 @@ public class BayesNet {
                 continue;
             }
             total += samples[i][indexW];
-            if(samples[i][indexSmoker] == 0.0){
+            if(samples[i][indexSmoker] == 1.0){
                 x += samples[i][indexW];
             }
         }
         
-        System.out.printf("P(X) = %f\n",(x / total));
+        System.out.println("S | +x, +d");
+        System.out.printf("+s = %f\n",(x / total));
+        System.out.printf("-s = %f\n",1 -(  x / total));
     }
     
-    public static Double[] generateSample(){
+    public static Double[] generateSample(int query){
         Double[] sample = new Double[nIndexes];
-        sample[indexW] = 1.; 
-        sample = generateVisitAfrica(sample,false);
+        sample[indexW] = 1.;
+        
+        if(query == 2){
+            sample = generateVisitAfrica(sample,true);
+            sample = generateSmoker(sample,true);
+        }else{
+            sample = generateVisitAfrica(sample,false);
+            sample = generateSmoker(sample,false);
+        }
         sample = generateTuberculosis(sample,false);
-        sample = generateSmoker(sample,false);
         sample = generateCancer(sample,false);
         sample = generateBronchiti(sample,false);
         sample = generateTBorCancer(sample,false);
-        sample = generateXRay(sample,true);
-        sample = generateDispnea(sample,true);
+        
+        if(query == 1){
+            sample = generateXRay(sample,true);
+            sample = generateDispnea(sample,true);
+        }else{
+            sample = generateXRay(sample,false);
+            sample = generateDispnea(sample,false);
+        }
+        
         //showSample(sample);
         
         return sample;
@@ -491,12 +518,12 @@ public class BayesNet {
         if(sample[0] == null){
             return;
         }
-        for(int i = 0; i < nIndexes; i++){
-            if(i < 8){
-                System.out.print(sample[i]+"  ");
-            }else{
-                System.out.printf(" | %f\n",sample[i]);
-            }
-        }
+//        for(int i = 0; i < nIndexes; i++){
+//            if(i < 8){
+//                System.out.print(sample[i]+"  ");
+//            }else{
+//                System.out.printf(" | %f\n",sample[i]);
+//            }
+//        }
     }
 }
