@@ -50,7 +50,11 @@ public class BayesNet {
         {1.,1.,1.,1.},
         {1.,1.,0.,1.},
         {1.,0.,1.,1.},
-        {1.,0.,0.,0.}};
+        {1.,0.,0.,0.},
+        {0.,1.,1.,0.},
+        {0.,1.,0.,0.},
+        {0.,0.,1.,0.},
+        {0.,0.,0.,1.}};
     
     static String[] hDispnea_Bronchitis_TB_Cancer = {"E","B","D","P(D|E,B)"};
     static Double[][] mDispnea_Bronchitis_TB_Cancer = {
@@ -94,6 +98,102 @@ public class BayesNet {
     
     public static void main(String[] args) {
         // TODO code application logic here
+        int nSamples = 10000;
+        Double[][] samples = new Double[nSamples][];
+        
+        for(int i = 0; i < nSamples; i++){
+            //System.out.print(i+" | ");
+            samples[i] = generateSample();
+        }
+        samples = joinSamples(samples);
+        smokerProbability(samples);
+        //XRayProbability(samples);
+        //tuberculosisProbability(samples);
+    }
+    
+    public static Double[][] joinSamples(Double[][] samples){
+        int nSamples = samples.length;
+        
+        for(int i = 0; i < nSamples -1; i++){
+            if(samples[i][0] == null){
+                continue;
+            }
+            for(int j = i + 1; j < nSamples; j++){
+                if(samples[j][0] == null){
+                    continue;
+                }
+                if(isEquals(samples[i], samples[j])){
+                    //System.out.println("IGUAIS: "+i+" "+j);
+                    samples[i][indexW] +=  samples[j][indexW];
+                    samples[j] = new Double[1];
+                }                
+            }
+        }     
+        
+        for(int i = 0; i < nSamples; i++){
+            showSample(samples[i]);
+        }
+        return samples;
+    }
+    
+    public static Boolean isEquals(Double[] sample1,Double[] sample2){
+    
+        for(int c = 0; c < nIndexes - 1; c++){
+            if(sample1[c].compareTo(sample2[c]) != 0){
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    public static void tuberculosisProbability(Double[][] samples){
+        int nSamples = samples.length;
+        int total = 0;
+        for(int i = 0; i < nSamples; i++){
+            if(samples[i][indexTuberculosis] == 1.0){
+                total++;
+            }
+        }
+        
+        System.out.printf("P(T) = %f\n",((1.0*total)/nSamples));
+    }
+    
+    public static void XRayProbability(Double[][] samples){
+        int nSamples = samples.length;
+        Double total = 0.;
+        Double x = 0.;
+        for(int i = 0; i < nSamples; i++){
+            if(samples[i][0] == null){
+                continue;
+            }
+            total += samples[i][indexW];
+            if(samples[i][indexXRay] == 0.0){
+                x += samples[i][indexW];
+            }
+        }
+        
+        System.out.printf("P(X) = %f\n",(x / total));
+    }
+    
+    public static void smokerProbability(Double[][] samples){
+        int nSamples = samples.length;
+        Double total = 0.;
+        Double x = 0.;
+        for(int i = 0; i < nSamples; i++){
+            if(samples[i][0] == null){
+                continue;
+            }
+            total += samples[i][indexW];
+            if(samples[i][indexSmoker] == 0.0){
+                x += samples[i][indexW];
+            }
+        }
+        
+        System.out.printf("P(X) = %f\n",(x / total));
+    }
+    
+    public static Double[] generateSample(){
         Double[] sample = new Double[nIndexes];
         sample[indexW] = 1.; 
         sample = generateVisitAfrica(sample,false);
@@ -102,13 +202,79 @@ public class BayesNet {
         sample = generateCancer(sample,false);
         sample = generateBronchiti(sample,false);
         sample = generateTBorCancer(sample,false);
-        sample = generateXRay(sample,false);
+        sample = generateXRay(sample,true);
+        sample = generateDispnea(sample,true);
+        //showSample(sample);
         
-        showSample(sample);
+        return sample;
     }
     
-    public static void generateSample(){
-        
+    public static Double[] generateDispnea(Double[] sample,Boolean evidence){
+        if(evidence == false){
+            Double r = randomValue();
+            if(sample[indexTBorCancer] == 1.0){
+                if(sample[indexBronchitis] == 1.0){
+                    if(r < mDispnea_Bronchitis_TB_Cancer[0][3]){
+                        sample[indexDispnea] = 1.;
+                    }else{
+                        sample[indexDispnea] = 0.;
+                    }
+                }else{
+                    if(r < mDispnea_Bronchitis_TB_Cancer[2][3]){
+                        sample[indexDispnea] = 1.;
+                    }else{
+                        sample[indexDispnea] = 0.;
+                    }
+                }
+            }else{
+                if(sample[indexBronchitis] == 1.0){
+                    if(r < mDispnea_Bronchitis_TB_Cancer[4][3]){
+                        sample[indexDispnea] = 1.;
+                    }else{
+                        sample[indexDispnea] = 0.;
+                    }
+                }else{
+                    if(r < mDispnea_Bronchitis_TB_Cancer[6][3]){
+                        sample[indexDispnea] = 1.;
+                    }else{
+                        sample[indexDispnea] = 0.;
+                    }
+                }
+            }
+        }else{
+            if(evidences[indexDispnea]){
+                sample[indexDispnea] = 1.;
+                if(sample[indexTBorCancer] == 1.0){
+                    if(sample[indexBronchitis] == 1.0){
+                        sample[indexW] *= mDispnea_Bronchitis_TB_Cancer[0][3];
+                    }else{
+                        sample[indexW] *= mDispnea_Bronchitis_TB_Cancer[2][3];
+                    }
+                }else{
+                    if(sample[indexBronchitis] == 1.0){
+                        sample[indexW] *= mDispnea_Bronchitis_TB_Cancer[4][3];
+                    }else{
+                        sample[indexW] *= mDispnea_Bronchitis_TB_Cancer[6][3];
+                    }
+                }
+            }else{
+                sample[indexDispnea] = 0.;
+                if(sample[indexTBorCancer] == 1.0){
+                    if(sample[indexBronchitis] == 1.0){
+                        sample[indexW] *= mDispnea_Bronchitis_TB_Cancer[1][3];
+                    }else{
+                        sample[indexW] *= mDispnea_Bronchitis_TB_Cancer[3][3];
+                    }
+                }else{
+                    if(sample[indexBronchitis] == 1.0){
+                        sample[indexW] *= mDispnea_Bronchitis_TB_Cancer[5][3];
+                    }else{
+                        sample[indexW] *= mDispnea_Bronchitis_TB_Cancer[7][3];
+                    }
+                }
+            }
+        }        
+        return sample;
     }
     
     public static Double[] generateXRay(Double[] sample,Boolean evidence){
@@ -297,10 +463,10 @@ public class BayesNet {
         }else{
             if(evidences[indexVisitAfrica]){
                 sample[indexVisitAfrica] = 1.;
-                sample[indexW] = mVisitAsia[0][1];
+                sample[indexW] *= mVisitAsia[0][1];
             }else{
                 sample[indexVisitAfrica] = 0.;
-                sample[indexW] = mVisitAsia[1][1];
+                sample[indexW] *= mVisitAsia[1][1];
             }
         }
         return sample;
@@ -312,16 +478,19 @@ public class BayesNet {
         
         Random r = new Random();
         double randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
-        System.out.println(randomValue+"");
+        //System.out.println(randomValue+"");
         return randomValue;
     }
     
     public static void showSample(Double[] sample){
+        if(sample[0] == null){
+            return;
+        }
         for(int i = 0; i < nIndexes; i++){
             if(i < 8){
-                System.out.print(sample[i]+" ");
+                System.out.print(sample[i]+"  ");
             }else{
-                System.out.printf("%f\n",sample[i]);
+                System.out.printf(" | %f\n",sample[i]);
             }
         }
     }
